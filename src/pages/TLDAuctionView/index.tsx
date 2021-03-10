@@ -13,6 +13,7 @@ import AuctionChart from "../../components/AuctionChartCard";
 import AuctionInfoCard from "../../components/AuctionInfoCard";
 import {useAPI} from "../../ducks/app";
 import {fetchAuctionByTLD} from "../../ducks/auctions";
+import AuctionSoldBanner from "../../components/AuctionSoldBanner";
 
 export default function TLDAuctionView() {
   const { params } = useRouteMatch<{tld: string}>();
@@ -32,6 +33,7 @@ export default function TLDAuctionView() {
 
   return (
     <div className="auction">
+      <AuctionSoldBanner tld={tld} />
       <AuctionOverview tld={tld} />
       <AuctionStatusCard tld={tld} />
       <AuctionChart tld={tld} />

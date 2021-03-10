@@ -2,7 +2,7 @@ import {AuctionState, ProposalState} from "../ducks/auctions";
 import moment from "moment";
 import {fromDollaryDoos} from "./number";
 
-type AuctionStatus = 'LISTED' | 'STARTED' | 'ENDED';
+type AuctionStatus = 'LISTED' | 'STARTED' | 'ENDED' | 'COMPLETED' | 'CANCELLED';
 
 export class Auction {
   tld: string;
@@ -23,6 +23,10 @@ export class Auction {
 
   decrementUnit: '1d' | '3h' | '1h' | '';
 
+  status: 'COMPLETED' | 'CANCELLED' | null;
+
+  buyer: string | null;
+
   constructor(options: AuctionState | undefined | null) {
     this.tld = options?.name || '';
     this.startPrice = options?.data[0].price || -1;
@@ -37,6 +41,8 @@ export class Auction {
       : new Date(endTime);
     this.priceDecrement = Math.abs(this.proposals[1]?.price - this.startPrice);
     this.durationDays = moment(this.endTime).diff(moment(this.startTime), 'd') + 1;
+    this.status = options?.spendingStatus || null;
+    this.buyer = options?.spendingTxHash || null;
 
     const secondTime = String(this.proposals[1]?.lockTime).length === 10
       ? new Date(this.proposals[1]?.lockTime * 1000)
@@ -63,6 +69,8 @@ export class Auction {
     const endTime = moment(this.endTime);
     const currentTime = moment(blockTime);
 
+    if (this.status) return this.status;
+
     if (currentTime.isBefore(startTime)) {
       return 'LISTED';
     } else if (currentTime.isSameOrAfter(startTime) && currentTime.isSameOrBefore(endTime)) {
@@ -76,6 +84,10 @@ export class Auction {
     const status = this.getStatus(blocktime);
 
     switch (status) {
+      case "COMPLETED":
+        return `SOLD`;
+      case "CANCELLED":
+        return 'Cancelled';
       case "LISTED":
         return `Start ${moment(this.startTime).fromNow()}`;
       case "STARTED":

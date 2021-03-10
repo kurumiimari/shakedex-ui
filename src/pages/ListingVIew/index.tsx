@@ -179,7 +179,7 @@ function RemoteAuctionRow(props: { auctionIndex: number }) {
       <td className={classNames({
         'local-auctions__status--listed': status === 'LISTED',
         'local-auctions__status--started': status === 'STARTED',
-        'local-auctions__status--ended': status === 'ENDED',
+        'local-auctions__status--ended': status === 'ENDED' || status === 'COMPLETED',
       })}>
         {statusText}
       </td>
@@ -221,7 +221,7 @@ function LocalAuctionRow(props: { auctionIndex: number }) {
       <td className={classNames({
         'local-auctions__status--listed': status === 'LISTED',
         'local-auctions__status--started': status === 'STARTED',
-        'local-auctions__status--ended': status === 'ENDED',
+        'local-auctions__status--ended': status === 'ENDED' || status === 'COMPLETED',
       })}>
         {statusText}
       </td>

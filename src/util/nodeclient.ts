@@ -85,6 +85,16 @@ export default class NodeClient {
 
     return await resp.json();
   }
+
+  async getTXByHash(txHash: string) {
+    const headers = this.getHeaders();
+    const resp = await fetch(`${this.apiHost}/tx/${txHash}`, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    return await resp.json();
+  }
 }
 
 export const useNodeClient = () => {

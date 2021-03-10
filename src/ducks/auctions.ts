@@ -5,6 +5,8 @@ const jsonSchemaValidate = require('jsonschema').validate;
 const { SwapProof } = require('shakedex/src/swapProof');
 import NodeClient from "../util/nodeclient";
 import {SHAKEDEX_URL} from "../util/shakedex";
+import nodeclient from "../util/nodeclient";
+import {AppRootState} from "../store/configureAppStore";
 
 export enum ActionTypes {
   UPLOAD_AUCTION_START = 'auctions/uploadAuctionStart',
@@ -49,6 +51,8 @@ export type AuctionState = {
   paymentAddr: string;
   publicKey: string;
   data: ProposalState[];
+  spendingStatus: 'COMPLETED' | 'CANCELLED' | null;
+  spendingTxHash: string | null;
 }
 
 type AuctionResponseJSON = {
@@ -60,6 +64,8 @@ type AuctionResponseJSON = {
   lockingOutputIdx: number;
   createdAt: number;
   updatedAt: number;
+  spendingStatus: 'COMPLETED' | 'CANCELLED' | null;
+  spendingTxHash: string | null;
   bids: {
     price: number;
     signature: string;
@@ -129,6 +135,8 @@ export const fetchRemoteAuctions = () => async (dispatch: Dispatch, getState: ()
       signature: bid.signature,
       lockTime: bid.lockTime,
     })),
+    spendingStatus: auction.spendingStatus,
+    spendingTxHash: auction.spendingTxHash,
   }))));
 };
 
@@ -164,10 +172,12 @@ export const fetchMoreRemoteAuctions = () => async (dispatch: Dispatch, getState
       signature: bid.signature,
       lockTime: bid.lockTime,
     })),
+    spendingStatus: auction.spendingStatus,
+    spendingTxHash: auction.spendingTxHash,
   }))));
 };
 
-export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch, getState: () => {auctions: State}) => {
+export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch, getState: () => AppRootState) => {
   const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions/n/${tld}`);
   const json: {
     auction: AuctionResponseJSON,
@@ -176,7 +186,7 @@ export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch, get
 
   if (!auction) return;
 
-  dispatch(addAuctionByTLD({
+  const auctionJSON = {
     name: auction.name,
     lockingTxHash: auction.lockingTxHash,
     lockingOutputIdx: auction.lockingOutputIdx,
@@ -187,7 +197,11 @@ export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch, get
       signature: bid.signature,
       lockTime: bid.lockTime,
     })),
-  }));
+    spendingStatus: auction.spendingStatus,
+    spendingTxHash: auction.spendingTxHash,
+  };
+
+  dispatch(addAuctionByTLD(auctionJSON));
 };
 
 export const setRemoteAuctions = (auctions: AuctionState[]): Action<AuctionState[]> => {

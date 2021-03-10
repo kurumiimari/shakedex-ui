@@ -1,0 +1,31 @@
+@import "./src/util/variables";
+
+.auction-sold {
+  @extend %row-nowrap;
+  @extend %h3-font;
+  align-items: center;
+  font-weight: 600;
+  cursor: default;
+  background-color: $congrats-gold;
+  color: $congrats-text;
+  padding: 1rem;
+
+  &__text {
+    @extend %row-nowrap;
+    align-items: center;
+    margin-left: 1rem;
+    color: $congrats-text;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:visited {
+      color: darken($congrats-text, 2);
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .auction-sold {
+    padding: .5rem .75rem;
+  }
+}

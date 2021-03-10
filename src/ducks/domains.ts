@@ -50,7 +50,7 @@ export const fetchDomain = (tld: string) => async (dispatch: Dispatch, getState:
   const nodeClient = new NodeClient({ apiHost, apiKey });
   const json = await nodeClient.getNameInfo(tld);
   const { result } = json;
-  const { start: available } = result.start;
+  const { start: available } = result?.start;
   const {
     owner,
     stats,

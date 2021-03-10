@@ -50,7 +50,7 @@ export default function AuctionChart(props: Props): ReactElement {
     setHoverPrice(Number(fromDollaryDoos(currentPrice)));
   }, [currentPrice, currentLockTime]);
 
-  if (!auctionState) {
+  if (!auctionState || auctionState.spendingStatus) {
     return <></>;
   }
 

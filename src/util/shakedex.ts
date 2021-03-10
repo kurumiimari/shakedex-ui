@@ -1,1 +1,1 @@
-export const SHAKEDEX_URL = process.env.SHAKEDEX_URL || 'https://shakedex.com';
+export const SHAKEDEX_URL = process.env.SHAKEDEX_URL || 'https://api.shakedex.com';
