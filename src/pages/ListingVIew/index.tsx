@@ -9,7 +9,7 @@ import {
   removeLocalAuction, setSearchParam, submitAuction,
   uploadAuctions,
   useLocalAuctionByIndex,
-  useLocalAuctions, useRemoteAuctionByIndex, useRemoteAuctions
+  useLocalAuctions, useRemoteAuctionByIndex, useRemoteAuctions, useSearchParam
 } from "../../ducks/auctions";
 import Card, {CardHeader} from "../../components/Card";
 
@@ -23,11 +23,9 @@ import Icon from "../../components/Icon";
 import Modal, {ModalContent, ModalHeader} from "../ModalRoot";
 import {useDevMode} from "../../ducks/app";
 import {InputWithIcon} from "../../components/Input";
-import {Simulate} from "react-dom/test-utils";
 import {Loader} from "../../components/Loader";
 
 export default function ListingView() {
-  const dispatch = useDispatch();
   const devMode = useDevMode();
 
   return (
@@ -54,7 +52,7 @@ function RemoteAuctions(): ReactElement {
   const [el, setElement] = useState<HTMLTableSectionElement | null>(null);
   const [errMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const searchParams = useSearchParam();
 
   useEffect(() => {
     (async function() {
@@ -89,6 +87,7 @@ function RemoteAuctions(): ReactElement {
           placeholder="Search by keyword"
           material="search"
           size={1.5}
+          value={searchParams}
           onChange={onSearchInputChange}
           onIconClick={onSearch}
           onKeyDown={e => {

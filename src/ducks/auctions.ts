@@ -402,6 +402,12 @@ export const useAuctionsUploading = (): boolean => {
   }, (a, b) => deepEqual(a, b));
 };
 
+export const useSearchParam = (): string => {
+  return useSelector((state: { auctions: State }) => {
+    return state.auctions.search;
+  }, (a, b) => deepEqual(a, b));
+};
+
 export async function readJSON(file: File): Promise<AuctionState> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
