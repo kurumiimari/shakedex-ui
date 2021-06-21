@@ -66,6 +66,8 @@
       border-radius: .125rem;
       text-align: center;
       background-color: darken($btn-blue, 10);
+      line-height: 1;
+      box-sizing: content-box;
     }
   }
 
@@ -81,6 +83,8 @@
       border-radius: .125rem;
       text-align: center;
       background-color: darken($btn-blue, 10);
+      line-height: 1;
+      box-sizing: content-box;
     }
   }
 }

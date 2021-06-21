@@ -16,18 +16,18 @@
 
 .input-group {
   @extend %row-nowrap;
-  background-color: rgba($black, .1);
-  border: 1px solid rgba($black, .2);
+  background-color: rgba($black, .2);
+  border: 1px solid rgba($white, 0.2);
   border-radius: .125rem;
 
   &:focus-within {
-    background-color: rgba($black, .2);
-    border-bottom: 1px solid $btn-blue;
+    background-color: rgba($black, .15);
+    border-bottom: 1px solid #ec4899;
   }
 
   .icon {
     color: $white;
-    opacity: .1;
+    opacity: .2;
     transition: opacity 150ms ease-in-out;
     margin-right: .5rem;
 

@@ -4,11 +4,5 @@
   @extend %col-nowrap;
   margin: 0 auto;
   color: $white;
-  width: 48rem;
-}
-
-@media (max-width: $breakpoint-tablet) {
-  .app-content {
-
-  }
+  max-width: 48rem;
 }

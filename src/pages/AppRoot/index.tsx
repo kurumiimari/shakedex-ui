@@ -4,7 +4,7 @@ import {Redirect, Route, Switch} from "react-router";
 import AppHeader from "../../components/AppHeader";
 
 import "./app.scss";
-import ListingView from "../ListingVIew";
+import ListingView from "../ListingView";
 import TLDAuctionView from "../TLDAuctionView";
 import {useDispatch} from "react-redux";
 import {fetchHandshake} from "../../ducks/handshake";
@@ -32,6 +32,10 @@ export default function AppRoot() {
           <Route
             path="/settings"
             component={SettingsView}
+          />
+          <Route
+            path="/page/:page"
+            component={ListingView}
           />
           <Route
             path="/"

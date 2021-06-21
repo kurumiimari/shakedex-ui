@@ -8,6 +8,7 @@ import Card from "../Card";
 
 import "./auction-overview.scss";
 import {useAuctionByTLD} from "../../ducks/auctions";
+import TLD from '../TLD';
 
 type Props = {
   tld: string;
@@ -36,7 +37,7 @@ export default function AuctionOverview(props: Props) {
           {/*/>*/}
         </Tooltipable>
         <div className="auction-overview__name">
-          {tld}
+          <TLD tld={tld} />
         </div>
       </div>
       <div className="auction-overview__r">

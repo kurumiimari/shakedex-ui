@@ -35,7 +35,6 @@ export type State = {
   byTLD: {
     [tld: string]: AuctionState;
   };
-  remotePage: number;
   remoteTotal: number;
   search: string;
 }
@@ -85,13 +84,6 @@ const initialState = {
   search: '',
 };
 
-export const setSearchParam = (search: string): Action<string> => {
-  return {
-    type: ActionTypes.SET_SEARCH,
-    payload: search,
-  };
-};
-
 export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dispatch) => {
   dispatch({ type: ActionTypes.UPLOAD_AUCTION_START});
 
@@ -113,11 +105,11 @@ export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dis
   }
 };
 
-const PER_PAGE = 20;
+const PER_PAGE = 50;
 
-export const fetchRemoteAuctions = () => async (dispatch: Dispatch, getState: () => {auctions: State}) => {
-  const {search} = getState().auctions;
-  const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions?page=1&per_page=${PER_PAGE}${search && `&search=${search}`}`);
+export const fetchRemoteAuctions = (page: number = 1, search: string | null = null) => async (dispatch: Dispatch) => {
+  console.log(page, search);
+  const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions?page=${page}&per_page=${PER_PAGE}${search && `&search=${search}`}`);
   const json: {
     auctions: AuctionResponseJSON[],
     total: number,
@@ -125,7 +117,7 @@ export const fetchRemoteAuctions = () => async (dispatch: Dispatch, getState: ()
 
   dispatch({
     type: ActionTypes.UPDATE_REMOTE_PAGE,
-    payload: 1,
+    payload: page,
   });
 
   dispatch({
@@ -151,44 +143,7 @@ export const fetchRemoteAuctions = () => async (dispatch: Dispatch, getState: ()
   }))));
 };
 
-export const fetchMoreRemoteAuctions = () => async (dispatch: Dispatch, getState: () => {auctions: State}) => {
-  const { auctions: {remotePage, remote, search}} = getState();
-
-  if (remote.length < remotePage * PER_PAGE) return;
-
-  const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions?page=${remotePage + 1}&per_page=${PER_PAGE}${search && `&search=${search}`}`);
-  const json: {
-    auctions: AuctionResponseJSON[],
-    total: number,
-  } = await resp.json();
-
-  dispatch({
-    type: ActionTypes.UPDATE_REMOTE_TOTAL,
-    payload: json.total,
-  });
-
-  dispatch({
-    type: ActionTypes.UPDATE_REMOTE_PAGE,
-    payload: remotePage + 1,
-  });
-
-  dispatch(addRemoteAuctions(json.auctions.map(auction => ({
-    name: auction.name,
-    lockingTxHash: auction.lockingTxHash,
-    lockingOutputIdx: auction.lockingOutputIdx,
-    publicKey: auction.publicKey,
-    paymentAddr: auction.paymentAddr,
-    data: auction.bids.map(bid => ({
-      price: bid.price,
-      signature: bid.signature,
-      lockTime: bid.lockTime,
-    })),
-    spendingStatus: auction.spendingStatus,
-    spendingTxHash: auction.spendingTxHash,
-  }))));
-};
-
-export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch, getState: () => AppRootState) => {
+export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch) => {
   const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions/n/${tld}`);
   const json: {
     auction: AuctionResponseJSON,
@@ -282,11 +237,6 @@ export default function auctionsReducer(state: State = initialState, action: Act
       return {
         ...state,
         search: action.payload,
-      };
-    case ActionTypes.UPDATE_REMOTE_PAGE:
-      return {
-        ...state,
-        remotePage: action.payload,
       };
     case ActionTypes.UPDATE_REMOTE_TOTAL:
       return {
@@ -385,7 +335,7 @@ export const useLocalAuctionByIndex = (index: number): AuctionState | undefined 
 
 export const useRemoteAuctions = (): AuctionState[] => {
   return useSelector((state: { auctions: State }) => {
-    return state.auctions.remote.map(name => state.auctions.byTLD[name]);;
+    return state.auctions.remote.map(name => state.auctions.byTLD[name]);
   }, (a, b) => deepEqual(a, b));
 };
 
@@ -399,12 +349,6 @@ export const useAuctionByTLD = (tld: string): AuctionState | null => {
 export const useAuctionsUploading = (): boolean => {
   return useSelector((state: { auctions: State }) => {
     return state.auctions.uploading;
-  }, (a, b) => deepEqual(a, b));
-};
-
-export const useSearchParam = (): string => {
-  return useSelector((state: { auctions: State }) => {
-    return state.auctions.search;
   }, (a, b) => deepEqual(a, b));
 };
 

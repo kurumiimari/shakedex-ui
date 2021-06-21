@@ -26,7 +26,7 @@ export default class Icon extends Component<Props> {
         <button
           className={`icon ${className}`}
           style={{
-            backgroundImage: `url(${url})`,
+            backgroundImage: url ? `url(${url})` : undefined,
             width: !material ? `${size}rem` : undefined,
             height: !material ? `${size}rem` : undefined,
             fontSize: material && `${size}rem`,

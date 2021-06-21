@@ -93,7 +93,7 @@ export class Auction {
       case "STARTED":
         return `End ${moment(this.endTime).fromNow()}`;
       case "ENDED":
-        return 'Finished';
+        return 'All Released';
     }
   }
 
@@ -116,8 +116,34 @@ export class Auction {
     return price;
   }
 
+  getNextDecrement(blocktime: Date): number|null {
+    let i = 0;
+    for (; i < this.proposals.length; i++) {
+      const proposal = this.proposals[i];
+      const proposalTime = proposal.lockTime < 1e10
+        ? proposal.lockTime * 1000
+        : proposal.lockTime;
+      if (blocktime.getTime() <= proposalTime) {
+        break;
+      }
+    }
+
+    if (i === this.proposals.length) {
+      return null;
+    }
+
+    const lockTime = this.proposals[i].lockTime;
+    if (lockTime < 1e10) {
+      return lockTime * 1000;
+    }
+    return lockTime;
+  }
+
   getCurrentTime(blocktime: Date): number {
-    if (this.getStatus(blocktime) !== 'STARTED') return -1;
+    const status = this.getStatus(blocktime);
+    if (status !== 'STARTED' && status !== 'ENDED') {
+      return -1;
+    }
 
     let locktime = this.proposals[0]?.lockTime;
     const currentTime = moment(blocktime);

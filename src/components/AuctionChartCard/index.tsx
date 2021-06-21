@@ -14,7 +14,6 @@ import {
 import {fromDollaryDoos} from "../../util/number";
 
 import "./auction-chart.scss";
-import {useCurrentBlocktime} from "../../ducks/handshake";
 import Button from "../Button";
 import Icon from "../Icon";
 import BobLogo from "../../../static/assets/icons/bob-white.svg";
@@ -52,7 +51,7 @@ export default function AuctionChart(props: Props): ReactElement {
 
   const status = auction?.getStatus(currentBlocktime);
 
-  if (status !== 'LISTED' && status !== 'STARTED') {
+  if (status !== 'LISTED' && status !== 'STARTED' && status !== 'ENDED') {
     return <></>;
   }
 
@@ -141,7 +140,7 @@ export default function AuctionChart(props: Props): ReactElement {
         <Line
           type="step"
           dataKey="price"
-          stroke="#00B2FF"
+          stroke="#ec4899"
         />
       </LineChart>
     </Card>

@@ -24,10 +24,6 @@
       opacity: 0;
       cursor: pointer;
     }
-
-    .icon {
-      display: none;
-    }
   }
 }
 
@@ -44,37 +40,6 @@
   &__delete-group {
     @extend %row-nowrap;
     align-items: center;
-  }
-
-  &__content {
-    table {
-      flex: 1 1 auto;
-      max-height: 20rem;
-    }
-
-    tbody {
-      overflow-y: auto;
-
-      tr {
-        cursor: pointer;
-
-        &:hover {
-          background-color: lighten($header-gray, 5);
-          td:nth-of-type(1) {
-            text-decoration: underline;
-          }
-        }
-
-        &:active {
-          background-color: darken($header-gray, 5);
-        }
-      }
-
-      td:nth-of-type(1) {
-        @extend %bold;
-        text-transform: uppercase;
-      }
-    }
   }
 
   &__status {
