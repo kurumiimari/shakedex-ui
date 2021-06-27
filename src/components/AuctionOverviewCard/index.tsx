@@ -9,6 +9,7 @@ import Card from "../Card";
 import "./auction-overview.scss";
 import {useAuctionByTLD} from "../../ducks/auctions";
 import TLD from '../TLD';
+import {SHAKEDEX_URL} from '../../util/shakedex';
 
 type Props = {
   tld: string;
@@ -44,11 +45,12 @@ export default function AuctionOverview(props: Props) {
         {
           auctionJSON && (
             <Tooltipable text="Download Presign">
-              <Icon
-                material="download"
-                size={2.25}
-                onClick={() => download(`${tld}-presigns.json`, JSON.stringify(auctionJSON))}
-              />
+              <a href={`${SHAKEDEX_URL}/api/v1/auctions/${auctionJSON.id}/download`} target="_blank">
+                <Icon
+                  material="download"
+                  size={2.25}
+                />
+              </a>
             </Tooltipable>
           )
         }

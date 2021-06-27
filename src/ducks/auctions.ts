@@ -46,6 +46,7 @@ export type ProposalState = {
 }
 
 export type AuctionState = {
+  id: number
   lockingOutputIdx: number;
   lockingTxHash: string;
   name: string;
@@ -128,6 +129,7 @@ export const fetchRemoteAuctions = (page: number = 1, search: string | null = nu
   dispatch(setRemoteAuctions([]));
 
   dispatch(addRemoteAuctions(json.auctions.map(auction => ({
+    id: auction.id,
     name: auction.name,
     lockingTxHash: auction.lockingTxHash,
     lockingOutputIdx: auction.lockingOutputIdx,
@@ -153,6 +155,7 @@ export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch) => 
   if (!auction) return;
 
   const auctionJSON = {
+    id: auction.id,
     name: auction.name,
     lockingTxHash: auction.lockingTxHash,
     lockingOutputIdx: auction.lockingOutputIdx,
