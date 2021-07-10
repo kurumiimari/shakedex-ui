@@ -5,6 +5,9 @@ import Root from './pages/AppRoot';
 import {BrowserRouter} from 'react-router-dom';
 import configureAppStore from "./store/configureAppStore";
 
+import 'react-datepicker/dist/react-datepicker.css';
+import './app.scss';
+
 const store = configureAppStore();
 ReactDOM.render(
   <Provider store={store}>

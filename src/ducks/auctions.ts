@@ -5,8 +5,7 @@ const jsonSchemaValidate = require('jsonschema').validate;
 const { SwapProof } = require('shakedex/src/swapProof');
 import NodeClient from "../util/nodeclient";
 import {SHAKEDEX_URL} from "../util/shakedex";
-import nodeclient from "../util/nodeclient";
-import {AppRootState} from "../store/configureAppStore";
+import {AppRootState} from '../store/configureAppStore';
 
 export enum ActionTypes {
   UPLOAD_AUCTION_START = 'auctions/uploadAuctionStart',
@@ -19,6 +18,8 @@ export enum ActionTypes {
   DELETE_LOCAL_AUCTION = 'auctions/deleteLocalAuction',
   ADD_AUCTION_BY_TLD = 'auctions/addAuctionByTLD',
   SET_SEARCH = 'auctions/setSearch',
+  SET_FILTER_FIELD = 'auctions/setFilterField',
+  TOGGLE_LOADING = 'auctions/toggleLoading'
 }
 
 type Action<payload> = {
@@ -30,6 +31,7 @@ type Action<payload> = {
 
 export type State = {
   uploading: boolean;
+  loading: boolean;
   local: string[];
   remote: string[];
   byTLD: {
@@ -37,6 +39,7 @@ export type State = {
   };
   remoteTotal: number;
   search: string;
+  filters: Filters;
 }
 
 export type ProposalState = {
@@ -75,14 +78,45 @@ type AuctionResponseJSON = {
   }[];
 }
 
+export type FilterStatus = 'COMPLETED' | 'CANCELLED' | 'ACTIVE';
+
+export interface Filters {
+  includePunycode: boolean
+  includeAscii: boolean
+  minLength: number
+  maxLength: number
+  statuses: FilterStatus[]
+  before?: number
+  after?: number
+  minCurrentBid: number
+  maxCurrentBid: number
+}
+
+export interface SetFilterFieldPayload {
+  field: keyof Filters
+  value: any
+}
+
+const defaultFilters: Filters = {
+  includePunycode: true,
+  includeAscii: true,
+  minLength: 1,
+  maxLength: 64,
+  statuses: ['ACTIVE'],
+  minCurrentBid: 0,
+  maxCurrentBid: 1000000 * 1e6
+}
+
 const initialState = {
   uploading: false,
+  loading: false,
   local: [],
   remote: [],
   remotePage: 1,
   remoteTotal: 0,
   byTLD: {},
   search: '',
+  filters: defaultFilters
 };
 
 export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dispatch) => {
@@ -108,13 +142,25 @@ export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dis
 
 const PER_PAGE = 50;
 
-export const fetchRemoteAuctions = (page: number = 1, search: string | null = null) => async (dispatch: Dispatch) => {
-  console.log(page, search);
-  const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions?page=${page}&per_page=${PER_PAGE}${search && `&search=${search}`}`);
-  const json: {
+export const fetchRemoteAuctions = (page: number = 1, search: string | null = null) => async (dispatch: Dispatch, getState: () => {  auctions: State }) => {
+  const { filters } = getState().auctions;
+  const queryString = makeQueryString({
+    page,
+    per_page: PER_PAGE,
+    search,
+    filters: filters ? JSON.stringify(filters) : null
+  });
+  dispatch(toggleLoading(true));
+  let json: {
     auctions: AuctionResponseJSON[],
     total: number,
-  } = await resp.json();
+  };
+  try {
+    const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions${queryString}`);
+    json = await resp.json();
+  } finally {
+    dispatch(toggleLoading(false));
+  }
 
   dispatch({
     type: ActionTypes.UPDATE_REMOTE_PAGE,
@@ -201,6 +247,13 @@ export const addLocalAuction = (auction: AuctionState): Action<AuctionState> => 
   };
 };
 
+export const toggleLoading = (loading: boolean): Action<boolean> => {
+  return {
+    type: ActionTypes.TOGGLE_LOADING,
+    payload: loading,
+  }
+}
+
 export const removeLocalAuction = (tld: string): Action<string> => {
   return {
     type: ActionTypes.DELETE_LOCAL_AUCTION,
@@ -233,6 +286,16 @@ export const uploadAuctions = (filelist: FileList | null) => async (
     dispatch(addLocalAuction(json as AuctionState));
   }
 };
+
+export const setFilterField = (field: keyof Filters, value: any): Action<SetFilterFieldPayload> => {
+  return {
+    type: ActionTypes.SET_FILTER_FIELD,
+    payload: {
+      field,
+      value
+    }
+  };
+}
 
 export default function auctionsReducer(state: State = initialState, action: Action<any>): State {
   switch (action.type) {
@@ -275,9 +338,26 @@ export default function auctionsReducer(state: State = initialState, action: Act
       return reduceAddLocalAuction(state, action);
     case ActionTypes.DELETE_LOCAL_AUCTION:
       return reduceDeleteLocalAuction(state, action);
+    case ActionTypes.SET_FILTER_FIELD:
+      return reduceSetFilterField(state, action);
+    case ActionTypes.TOGGLE_LOADING:
+      return {
+        ...state,
+        loading: action.payload,
+      };
     default:
       return state;
   }
+}
+
+function reduceSetFilterField(state: State, action: Action<SetFilterFieldPayload>): State {
+  return {
+    ...state,
+    filters: {
+      ...state.filters,
+      [action.payload.field]: action.payload.value
+    }
+  };
 }
 
 function reduceDeleteLocalAuction(state: State, action: Action<string>): State {
@@ -462,3 +542,17 @@ const auctionSchema = {
     },
   },
 };
+
+const makeQueryString = (opts: object): string => {
+  const out = [];
+  for (const [k, v] of Object.entries(opts)) {
+    if (typeof v === 'undefined') {
+      continue;
+    }
+    out.push(`${k}=${encodeURIComponent(v)}`)
+  }
+  if (out.length === 0) {
+    return '';
+  }
+  return '?' + out.join('&');
+}

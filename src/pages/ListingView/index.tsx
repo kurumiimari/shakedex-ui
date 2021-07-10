@@ -30,6 +30,7 @@ import {useDevMode} from '../../ducks/app';
 import {Loader} from '../../components/Loader';
 import TLD from '../../components/TLD';
 import Countdown from '../../components/Countdown';
+import ListingFilters from '../../components/ListingFilters';
 import {useURLSearch} from '../../hooks';
 
 export default function ListingView () {
@@ -56,17 +57,15 @@ export default function ListingView () {
 
 function RemoteAuctions (props: { page: number }): ReactElement {
   const remoteAuctions = useRemoteAuctions();
-  const {remoteTotal} = useSelector((state: { auctions: State }) => state.auctions);
+  const {remoteTotal, loading} = useSelector((state: { auctions: State }) => state.auctions);
   const dispatch = useDispatch();
   const [errMessage, setErrorMessage] = useState('');
-  const [loading, setLoading] = useState(true);
   const urlSearch = useURLSearch();
+  const [filtersVisible, setFiltersVisible] = useState(false);
 
   useEffect(() => {
     (async function () {
-      setLoading(true);
       await dispatch(fetchRemoteAuctions(props.page, urlSearch));
-      setLoading(false);
     })();
   }, [props.page, urlSearch]);
 
@@ -83,6 +82,14 @@ function RemoteAuctions (props: { page: number }): ReactElement {
         <div
           className="bg-gray-900 px-4 py-2"
         >
+          <div className="pb-4 pt-2">
+            <ListingFilters
+              isVisible={filtersVisible}
+              toggle={setFiltersVisible}
+              page={props.page}
+              search={urlSearch}
+            />
+          </div>
           <div>
             <div className="grid-cols-5 gap-4 px-4 py-2 mb-2 hidden md:grid">
               <AuctionTableHeader>Name</AuctionTableHeader>
@@ -200,11 +207,11 @@ function RemoteAuctionRow (props: { auctionIndex: number }) {
       </div>
       <div className="col-span-2 md:hidden grid grid-cols-3 gap-4">
         <div className="text-gray-300">
-          <span className="text-gray-500 text-sm font-medium">Current Bid</span><br/>
+          <span className="text-gray-500 text-sm font-medium">Current Bid</span><br />
           {formatNumber(fromDollaryDoos(price))}{' '}
         </div>
         <div className="text-gray-300">
-          <span className="text-gray-500 text-sm font-medium">Next Bid In</span><br/>
+          <span className="text-gray-500 text-sm font-medium">Next Bid In</span><br />
           <div className="font-mono">
             {(status === 'CANCELLED' || status === 'COMPLETED') && (
               <span className="text-gray-500">-</span>
@@ -222,7 +229,7 @@ function RemoteAuctionRow (props: { auctionIndex: number }) {
           </div>
         </div>
         <div className="text-gray-300">
-          <span className="text-gray-500 text-sm font-medium">Decrement</span><br/>
+          <span className="text-gray-500 text-sm font-medium">Decrement</span><br />
           {formatNumber(fromDollaryDoos(auction.priceDecrement))}{' '}
           <span className="text-gray-500 text-sm font-medium">/ {auction.decrementUnit}</span>
         </div>
