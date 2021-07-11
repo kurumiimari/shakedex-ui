@@ -55,7 +55,7 @@ export const ListingFilters = (props: ListingFiltersProps) => {
       </div>
       {props.isVisible && (
         <div className="p-4 bg-gray-700 rounded-sm mt-2">
-          <div className="mb-4 grid grid-cols-2 gap-4 text-gray-200">
+          <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
             <div>
               <div className="text-sm text-gray-400 mb-2 font-bold">Name Types</div>
               <div className="mb-2">
@@ -98,7 +98,7 @@ export const ListingFilters = (props: ListingFiltersProps) => {
               </div>
             </div>
           </div>
-          <div className="mb-4 grid grid-cols-2 gap-4 text-gray-200">
+          <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
             <div>
               <div className="grid grid-cols-2 gap-4 mb-2">
                 <div>

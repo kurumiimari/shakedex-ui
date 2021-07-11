@@ -10,6 +10,7 @@ import {useDispatch} from "react-redux";
 import {fetchHandshake} from "../../ducks/handshake";
 import {SettingsView} from "../SettingsView";
 import {initApp} from "../../ducks/app";
+import Stats from '../Stats';
 
 
 export default function AppRoot() {
@@ -36,6 +37,10 @@ export default function AppRoot() {
           <Route
             path="/page/:page"
             component={ListingView}
+          />
+          <Route
+            path="/stats"
+            component={Stats}
           />
           <Route
             path="/"

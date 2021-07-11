@@ -5,6 +5,7 @@ import app from "../ducks/app";
 import domains from "../ducks/domains";
 import auctions from "../ducks/auctions";
 import handshake from "../ducks/handshake";
+import stats from '../ducks/stats';
 import ls from "./localStorage";
 
 const rootReducer = combineReducers({
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   domains,
   auctions,
   handshake,
+  stats,
 });
 
 export type AppRootState = ReturnType<typeof rootReducer>;

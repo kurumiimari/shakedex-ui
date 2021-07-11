@@ -6,6 +6,7 @@ import Logo from "../../../static/assets/icons/museum.svg";
 import "./app-header.scss";
 import {useURLSearch} from '../../hooks';
 import {InputWithIcon} from '../Input';
+import { Link } from 'react-router-dom'
 
 
 export default function AppHeader() {
@@ -31,7 +32,20 @@ export default function AppHeader() {
             url={Logo}
             size={2.25}
             onClick={goHome}
+            className="mr-4"
           />
+          <Link
+            className="font-bold text-pink-500 mr-2"
+            to="/"
+          >
+            Home
+          </Link>
+          <Link
+            className="font-bold text-pink-500"
+            to="/stats"
+          >
+            Stats
+          </Link>
         </div>
         <div className="header__content__r">
           <div className="mr-2 flex items-center">
