@@ -1,4 +1,4 @@
-import React, {ChangeEvent, ReactElement, ReactNode, useCallback, useEffect, useState} from 'react';
+import React, {ChangeEvent, ReactElement, useCallback, useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
 import AppContent from '../../components/AppContent';
@@ -7,8 +7,11 @@ import {
   fetchRemoteAuctions,
   readJSON,
   removeLocalAuction,
+  SortDirection,
+  SortField,
   State,
   submitAuction,
+  toggleSortField,
   uploadAuctions,
   useLocalAuctionByIndex,
   useLocalAuctions,
@@ -92,11 +95,33 @@ function RemoteAuctions (props: { page: number }): ReactElement {
           </div>
           <div>
             <div className="grid-cols-5 gap-4 px-4 py-2 mb-2 hidden md:grid">
-              <AuctionTableHeader>Name</AuctionTableHeader>
-              <AuctionTableHeader>Status</AuctionTableHeader>
-              <AuctionTableHeader>Current Bid</AuctionTableHeader>
-              <AuctionTableHeader>Next Bid In</AuctionTableHeader>
-              <AuctionTableHeader>Decrement</AuctionTableHeader>
+              <AuctionTableHeader
+                title="Name"
+                sortable
+                sortField="name"
+                page={props.page}
+                search={urlSearch}
+              />
+              <AuctionTableHeader
+                title="Status"
+                sortable
+                sortField="status"
+                page={props.page}
+                search={urlSearch}
+              />
+              <AuctionTableHeader
+                title="Current Bid"
+                sortable
+                sortField="currentBid"
+                page={props.page}
+                search={urlSearch}
+              />
+              <AuctionTableHeader
+                title="Next Bid In"
+              />
+              <AuctionTableHeader
+                title="Decrement"
+              />
             </div>
             {
               !loading && remoteAuctions.map((auctionOption, i) => {
@@ -337,10 +362,51 @@ function LocalAuctionRow (props: { auctionIndex: number }) {
   );
 }
 
-const AuctionTableHeader = (props: { children: ReactNode }) => {
+interface AuctionTableHeaderProps {
+  title: string
+  sortable?: boolean
+  sortField?: SortField
+  search?: string | null
+  page?: number
+}
+
+const noop = () => null;
+
+const AuctionTableHeader = (props: AuctionTableHeaderProps) => {
+  const dispatch = useDispatch();
+  const {sortField, sortDirection} = useSelector((state: { auctions: State }) => state.auctions);
+  const onClick = props.sortable ? () => {
+    let nextSortDirection: SortDirection | null;
+    if (sortField === props.sortField) {
+      if (sortDirection === 1) {
+        nextSortDirection = -1;
+      } else {
+        nextSortDirection = null;
+      }
+    } else {
+      nextSortDirection = 1;
+    }
+
+    dispatch(toggleSortField(
+      props.page!,
+      props.search!,
+      nextSortDirection === null ? 'createdAt' : props.sortField!,
+      nextSortDirection === null ? -1 : nextSortDirection
+    ));
+  } : noop;
+
   return (
-    <div className="text-sm font-medium text-gray-500">
-      {props.children}
+    <div
+      className="text-sm font-medium text-gray-500 flex items-center"
+      onClick={onClick}
+    >
+      {props.title}
+      {sortField === props.sortField && (
+        <Icon
+          material={sortDirection === 1 ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+          size={1}
+        />
+      )}
     </div>
   );
 };

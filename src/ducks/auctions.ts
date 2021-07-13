@@ -1,11 +1,11 @@
-import {Dispatch} from "redux";
+import {Dispatch} from 'redux';
 import deepEqual from 'deep-equal';
-import {useSelector} from "react-redux";
+import {useSelector} from 'react-redux';
+import NodeClient from '../util/nodeclient';
+import {SHAKEDEX_URL} from '../util/shakedex';
+
 const jsonSchemaValidate = require('jsonschema').validate;
-const { SwapProof } = require('shakedex/src/swapProof');
-import NodeClient from "../util/nodeclient";
-import {SHAKEDEX_URL} from "../util/shakedex";
-import {AppRootState} from '../store/configureAppStore';
+const {SwapProof} = require('shakedex/src/swapProof');
 
 export enum ActionTypes {
   UPLOAD_AUCTION_START = 'auctions/uploadAuctionStart',
@@ -19,7 +19,8 @@ export enum ActionTypes {
   ADD_AUCTION_BY_TLD = 'auctions/addAuctionByTLD',
   SET_SEARCH = 'auctions/setSearch',
   SET_FILTER_FIELD = 'auctions/setFilterField',
-  TOGGLE_LOADING = 'auctions/toggleLoading'
+  TOGGLE_LOADING = 'auctions/toggleLoading',
+  TOGGLE_SORT_FIELD = 'auctions/toggleSortField'
 }
 
 type Action<payload> = {
@@ -28,6 +29,10 @@ type Action<payload> = {
   meta?: any;
   error?: boolean;
 }
+
+export type SortField = 'createdAt' | 'currentBid' | 'name' | 'status';
+
+export type SortDirection = -1 | 1
 
 export type State = {
   uploading: boolean;
@@ -40,6 +45,8 @@ export type State = {
   remoteTotal: number;
   search: string;
   filters: Filters;
+  sortField: SortField
+  sortDirection: SortDirection
 }
 
 export type ProposalState = {
@@ -105,22 +112,23 @@ const defaultFilters: Filters = {
   statuses: ['ACTIVE'],
   minCurrentBid: 0,
   maxCurrentBid: 1000000 * 1e6
-}
+};
 
-const initialState = {
+const initialState: State = {
   uploading: false,
   loading: false,
   local: [],
   remote: [],
-  remotePage: 1,
   remoteTotal: 0,
   byTLD: {},
   search: '',
-  filters: defaultFilters
+  filters: defaultFilters,
+  sortField: 'createdAt',
+  sortDirection: -1
 };
 
 export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dispatch) => {
-  dispatch({ type: ActionTypes.UPLOAD_AUCTION_START});
+  dispatch({type: ActionTypes.UPLOAD_AUCTION_START});
 
   try {
     const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions`, {
@@ -133,22 +141,24 @@ export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dis
     const json = await resp.json();
 
     if (json.error) throw new Error(json.error.message);
-    dispatch({ type: ActionTypes.UPLOAD_AUCTION_END });
+    dispatch({type: ActionTypes.UPLOAD_AUCTION_END});
   } catch (e) {
-    dispatch({ type: ActionTypes.UPLOAD_AUCTION_END });
+    dispatch({type: ActionTypes.UPLOAD_AUCTION_END});
     throw e;
   }
 };
 
 const PER_PAGE = 50;
 
-export const fetchRemoteAuctions = (page: number = 1, search: string | null = null) => async (dispatch: Dispatch, getState: () => {  auctions: State }) => {
-  const { filters } = getState().auctions;
+export const fetchRemoteAuctions = (page: number = 1, search: string | null = null) => async (dispatch: Dispatch, getState: () => { auctions: State }) => {
+  const {filters, sortDirection, sortField} = getState().auctions;
   const queryString = makeQueryString({
     page,
     per_page: PER_PAGE,
     search,
-    filters: filters ? JSON.stringify(filters) : null
+    filters: filters ? JSON.stringify(filters) : null,
+    sort_field: sortField,
+    sort_direction: sortDirection
   });
   dispatch(toggleLoading(true));
   let json: {
@@ -189,6 +199,18 @@ export const fetchRemoteAuctions = (page: number = 1, search: string | null = nu
     spendingStatus: auction.spendingStatus,
     spendingTxHash: auction.spendingTxHash,
   }))));
+};
+
+export const toggleSortField = (page: number = 1, search: string | null = null, sortField: SortField, sortDirection: SortDirection) => async (dispatch: Dispatch) => {
+  dispatch({
+    type: ActionTypes.TOGGLE_SORT_FIELD,
+    payload: {
+      sortField,
+      sortDirection,
+    }
+  });
+
+  await dispatch(fetchRemoteAuctions(page, search) as any);
 };
 
 export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch) => {
@@ -251,8 +273,8 @@ export const toggleLoading = (loading: boolean): Action<boolean> => {
   return {
     type: ActionTypes.TOGGLE_LOADING,
     payload: loading,
-  }
-}
+  };
+};
 
 export const removeLocalAuction = (tld: string): Action<string> => {
   return {
@@ -264,13 +286,13 @@ export const removeLocalAuction = (tld: string): Action<string> => {
 export const uploadAuctions = (filelist: FileList | null) => async (
   dispatch: Dispatch,
   getState: () => {
-    app: { apiHost: string; apiKey: string},
+    app: { apiHost: string; apiKey: string },
     auctions: State,
   },
 ) => {
   if (!filelist) return;
-  const { app: { apiHost, apiKey }, auctions: { local } } = getState();
-  const nodeClient = new NodeClient({ apiHost, apiKey });
+  const {app: {apiHost, apiKey}, auctions: {local}} = getState();
+  const nodeClient = new NodeClient({apiHost, apiKey});
   const files = Array.from(filelist);
   for (const file of files) {
     const json = await readJSON(file);
@@ -295,9 +317,9 @@ export const setFilterField = (field: keyof Filters, value: any): Action<SetFilt
       value
     }
   };
-}
+};
 
-export default function auctionsReducer(state: State = initialState, action: Action<any>): State {
+export default function auctionsReducer (state: State = initialState, action: Action<any>): State {
   switch (action.type) {
     case ActionTypes.SET_SEARCH:
       return {
@@ -345,12 +367,18 @@ export default function auctionsReducer(state: State = initialState, action: Act
         ...state,
         loading: action.payload,
       };
+    case ActionTypes.TOGGLE_SORT_FIELD:
+      return {
+        ...state,
+        sortField: action.payload.sortField,
+        sortDirection: action.payload.sortDirection
+      };
     default:
       return state;
   }
 }
 
-function reduceSetFilterField(state: State, action: Action<SetFilterFieldPayload>): State {
+function reduceSetFilterField (state: State, action: Action<SetFilterFieldPayload>): State {
   return {
     ...state,
     filters: {
@@ -360,18 +388,18 @@ function reduceSetFilterField(state: State, action: Action<SetFilterFieldPayload
   };
 }
 
-function reduceDeleteLocalAuction(state: State, action: Action<string>): State {
+function reduceDeleteLocalAuction (state: State, action: Action<string>): State {
   return {
     ...state,
     local: state.local.filter((name) => name !== action.payload),
   };
 }
 
-function reduceAddRemoteAuctions(state: State, action: Action<AuctionState[]>): State {
-  const { remote } = state;
+function reduceAddRemoteAuctions (state: State, action: Action<AuctionState[]>): State {
+  const {remote} = state;
   return {
     ...state,
-    remote: [...remote, ...action.payload.map(({ name }) => name)],
+    remote: [...remote, ...action.payload.map(({name}) => name)],
     byTLD: {
       ...state.byTLD,
       ...action.payload.reduce((acc: State['byTLD'], auction) => {
@@ -382,8 +410,8 @@ function reduceAddRemoteAuctions(state: State, action: Action<AuctionState[]>): 
   };
 }
 
-function reduceAddLocalAuction(state: State, action: Action<AuctionState>): State {
-  const { local } = state;
+function reduceAddLocalAuction (state: State, action: Action<AuctionState>): State {
+  const {local} = state;
   const newAuctionState = action.payload;
   const exists = local.reduce((acc, name) => {
     return acc || newAuctionState.name === name;
@@ -424,7 +452,7 @@ export const useRemoteAuctions = (): AuctionState[] => {
 
 export const useAuctionByTLD = (tld: string): AuctionState | null => {
   return useSelector((state: { auctions: State }) => {
-    const { byTLD } = state.auctions;
+    const {byTLD} = state.auctions;
     return byTLD[tld] || null;
   }, (a, b) => deepEqual(a, b));
 };
@@ -435,17 +463,17 @@ export const useAuctionsUploading = (): boolean => {
   }, (a, b) => deepEqual(a, b));
 };
 
-export async function readJSON(file: File): Promise<AuctionState> {
+export async function readJSON (file: File): Promise<AuctionState> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = function fileReadCompleted() {
+    reader.onload = function fileReadCompleted () {
       resolve(JSON.parse(reader.result as string));
     };
     reader.readAsText(file);
   });
 }
 
-export async function assertAuction(auctionJSON: AuctionState, nodeClient: NodeClient) {
+export async function assertAuction (auctionJSON: AuctionState, nodeClient: NodeClient) {
   const res = jsonSchemaValidate(auctionJSON, auctionSchema);
 
   if (!res.valid) {
@@ -465,7 +493,7 @@ export async function assertAuction(auctionJSON: AuctionState, nodeClient: NodeC
 
   for (const proof of proofs) {
     try {
-      const ok = await proof.verify({ nodeClient });
+      const ok = await proof.verify({nodeClient});
       if (!ok) {
         throw new Error('Swap proofs failed validation.');
       }
@@ -549,10 +577,10 @@ const makeQueryString = (opts: object): string => {
     if (typeof v === 'undefined') {
       continue;
     }
-    out.push(`${k}=${encodeURIComponent(v)}`)
+    out.push(`${k}=${encodeURIComponent(v)}`);
   }
   if (out.length === 0) {
     return '';
   }
   return '?' + out.join('&');
-}
+};
