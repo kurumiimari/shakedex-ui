@@ -27,6 +27,7 @@ import {Link} from 'react-router-dom';
 import {useCurrentBlocktime} from '../../ducks/handshake';
 import {formatNumber, fromDollaryDoos} from '../../util/number';
 import classNames from 'classnames';
+import c from 'classnames';
 import Icon from '../../components/Icon';
 import Modal, {ModalContent, ModalHeader} from '../ModalRoot';
 import {useDevMode} from '../../ducks/app';
@@ -397,7 +398,9 @@ const AuctionTableHeader = (props: AuctionTableHeaderProps) => {
 
   return (
     <div
-      className="text-sm font-medium text-gray-500 flex items-center"
+      className={c('text-sm font-medium text-gray-500 flex items-center', {
+        'cursor-pointer': props.sortable
+      })}
       onClick={onClick}
     >
       {props.title}
