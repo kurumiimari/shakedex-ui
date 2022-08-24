@@ -54,7 +54,7 @@ export const setStats = (stats: Stats): Action<Stats> => {
 export const fetchStats = () => async (dispatch: Dispatch) => {
   dispatch(toggleLoading(true));
   try {
-    const resp = await fetch(`${SHAKEDEX_URL}/api/v1/stats`, {
+    const resp = await fetch(`${SHAKEDEX_URL}/api/v2/stats`, {
       method: 'GET',
     });
     const stats = await resp.json() as Stats;

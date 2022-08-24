@@ -1,6 +1,6 @@
 {
   "name": "shakedex-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Concept UI for ShakeDex",
   "main": "index.js",
   "scripts": {
@@ -28,9 +28,9 @@
     "html-webpack-plugin": "^3.2.0",
     "image-webpack-loader": "^6.0.0",
     "node-loader": "^0.6.0",
-    "node-sass": "^4.13.0",
+    "node-sass": "5.0.0",
     "react-router-dom": "^5.1.2",
-    "sass-loader": "^8.0.0",
+    "sass-loader": "10.1.1",
     "style-loader": "^1.0.1",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.3",
@@ -44,8 +44,8 @@
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
     "deep-equal": "^2.0.5",
-    "hs-client": "0.0.9",
-    "hsd": "https://github.com/handshake-org/hsd/tarball/a94ce87",
+    "hs-client": "0.0.11",
+    "hsd": "4.0.1",
     "jsonschema": "^1.4.0",
     "markdown-draft-js": "^2.1.1",
     "moment": "^2.24.0",
@@ -60,6 +60,6 @@
     "redux": "^4.0.4",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
-    "shakedex": "0.0.6"
+    "shakedex": "0.0.18"
   }
 }

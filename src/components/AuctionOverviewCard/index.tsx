@@ -45,7 +45,7 @@ export default function AuctionOverview(props: Props) {
         {
           auctionJSON && (
             <Tooltipable text="Download Presign">
-              <a href={`${SHAKEDEX_URL}/api/v1/auctions/${auctionJSON.id}/download`} target="_blank">
+              <a href={`${SHAKEDEX_URL}/api/v2/auctions/${auctionJSON.id}/download`} target="_blank">
                 <Icon
                   material="download"
                   size={2.25}
