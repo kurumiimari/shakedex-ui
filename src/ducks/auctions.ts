@@ -131,7 +131,7 @@ export const submitAuction = (auctionJSON: AuctionState) => async (dispatch: Dis
   dispatch({type: ActionTypes.UPLOAD_AUCTION_START});
 
   try {
-    const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions`, {
+    const resp = await fetch(`${SHAKEDEX_URL}/api/v2/auctions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export const fetchRemoteAuctions = (page: number = 1, search: string | null = nu
     total: number,
   };
   try {
-    const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions${queryString}`);
+    const resp = await fetch(`${SHAKEDEX_URL}/api/v2/auctions${queryString}`);
     json = await resp.json();
   } finally {
     dispatch(toggleLoading(false));
@@ -214,7 +214,7 @@ export const toggleSortField = (page: number = 1, search: string | null = null, 
 };
 
 export const fetchAuctionByTLD = (tld: string) => async (dispatch: Dispatch) => {
-  const resp = await fetch(`${SHAKEDEX_URL}/api/v1/auctions/n/${tld}`);
+  const resp = await fetch(`${SHAKEDEX_URL}/api/v2/auctions/n/${tld}`);
   const json: {
     auction: AuctionResponseJSON,
   } = await resp.json();

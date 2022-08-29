@@ -21,7 +21,7 @@ type Action<payload> = {
 }
 
 const initialState: State = {
-  apiHost: 'https://5pi.io/hsd',
+  apiHost: 'https://api.handshakeapi.com/hsd',
   apiKey: '',
   devMode: false,
 };

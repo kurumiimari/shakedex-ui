@@ -5,7 +5,6 @@ import AppHeader from "../../components/AppHeader";
 
 import "./app.scss";
 import ListingView from "../ListingView";
-import MaintenanceView from "../MaintenanceView";
 import TLDAuctionView from "../TLDAuctionView";
 import {useDispatch} from "react-redux";
 import {fetchHandshake} from "../../ducks/handshake";
@@ -27,7 +26,7 @@ export default function AppRoot() {
       <AppHeader />
       <div className="app__content">
         <Switch>
-          {/* <Route
+          <Route
             path="/a/:tld"
             component={TLDAuctionView}
           />
@@ -46,10 +45,6 @@ export default function AppRoot() {
           <Route
             path="/"
             component={ListingView}
-          /> */}
-          <Route
-            path="/"
-            component={MaintenanceView}
           />
           <Route>
             <Redirect to="/" />
